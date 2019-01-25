@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Text;
+using FibonacciSequence.Interfaces;
+
 namespace FibonacciSequence
 {
-    public class FibonacciSequencer : Interfaces.IFibonacciSequencer
+    public class FibonacciSequencer : IFibonacciSequencer
     {
-        private int NextElement(int a, int b)
+        public int NextElement(int n_1, int n_2)
         {
-            return a + b;
+            return n_1 + n_2;
         }
 
         public int[] GenerateSequence(int n) // TODO consider of use library like BigMath to handle long  numbers
@@ -30,6 +33,18 @@ namespace FibonacciSequence
             }
 
             return elements;
+        }
+
+        public string GetSequenceString(int n, char separator)
+        {
+            var sequence = GenerateSequence(n);
+
+            var sb = new StringBuilder();
+            foreach (var element in sequence)
+            {
+                sb.Append(element + separator.ToString());
+            }
+            return sb.ToString().Trim();
         }
     }
 }

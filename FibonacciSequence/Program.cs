@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace FibonacciSequence
 {
@@ -33,12 +32,13 @@ namespace FibonacciSequence
                 return;
             }
 
-            var n = argsParser.GetArgumentParameter<int>(argN, 2);
-            var sequencer = new FibonacciSequencer();
-            var sequence = sequencer.GenerateSequence(n);
+            // TODO add validation of arguments
 
-            var separator = argsParser.GetArgumentParameter<char>(argS, ' ');
-            var sequenceString = GetSequenceString(sequence, separator);
+            var n = argsParser.GetArgumentParameter(argN, 2);
+            var separator = argsParser.GetArgumentParameter(argS, ' ');
+
+            var sequencer = new FibonacciSequencer();
+            var sequenceString = sequencer.GetSequenceString(n, separator);
 
             var filePath = argsParser.GetArgumentParameter<string>(argF, null);
 
@@ -48,16 +48,6 @@ namespace FibonacciSequence
                 SaveToDisk(filePath, sequenceString);
 
             return;
-        }
-
-        private static string GetSequenceString(int[] sequence, char separator)
-        {
-            var sb = new StringBuilder();
-            foreach (var element in sequence)
-            {
-                sb.Append(element + separator.ToString());
-            }
-            return sb.ToString().Trim();
         }
 
         private static void WriteToConsole(string sequence, bool waitForInput)
