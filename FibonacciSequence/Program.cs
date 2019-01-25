@@ -7,33 +7,47 @@ namespace FibonacciSequence
 {
     class Program
     {
-        public static int Main(string[] args)
+        private static readonly string argN = "-n";
+        private static readonly string argC = "-c";
+        private static readonly string argF = "-f";
+        private static readonly string argS = "-s";
+
+        private static Dictionary<string, Type> ArgsDefinition = new Dictionary<string, Type>
+        {
+            { argN, typeof(int) },
+            { argF, typeof(string) },
+            { argC, null },
+            { argS, typeof(char) },
+        };
+
+        public static void Main(string[] args)
         {
             var argsParser = new ArgsParser();
-            if (!argsParser.Parse(args))
+            try
             {
-                return 0; //error on parsing args
+                argsParser.Parse(args, ArgsDefinition);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return;
             }
 
-            var n = argsParser.GetArg<int>(argsParser.argN, 2);
+            var n = argsParser.GetArgumentParameter<int>(argN, 2);
             var sequencer = new FibonacciSequencer();
-            var sequence = sequencer.NElements(n);
+            var sequence = sequencer.GenerateSequence(n);
 
-            var separator = argsParser.GetArg<char>(argsParser.argS, ' ');
+            var separator = argsParser.GetArgumentParameter<char>(argS, ' ');
             var sequenceString = GetSequenceString(sequence, separator);
 
-            var filePath = argsParser.GetArg<string>(argsParser.argF, null);
-            if (string.IsNullOrEmpty(filePath))
-            {
-                var waitForInput = argsParser.GetArg<bool>(argsParser.argC, false);
-                WriteToConsole(sequenceString, waitForInput);
-            }
-            else
-            {
-                SaveToDisk(filePath, sequenceString);
-            }
+            var filePath = argsParser.GetArgumentParameter<string>(argF, null);
 
-            return -1;
+            if (string.IsNullOrEmpty(filePath))
+                WriteToConsole(sequenceString, argsParser.HasArg(argC));
+            else
+                SaveToDisk(filePath, sequenceString);
+
+            return;
         }
 
         private static string GetSequenceString(int[] sequence, char separator)
@@ -58,9 +72,7 @@ namespace FibonacciSequence
         private static bool SaveToDisk(string filePath, string sequence)
         {
             if (File.Exists(filePath) && !ShouldOverwriteFile())
-            {
                 return false;
-            }
 
             try
             {
@@ -69,6 +81,8 @@ namespace FibonacciSequence
             }
             catch (Exception ex)
             {
+                Console.WriteLine();
+                Console.WriteLine(string.Format("File saving error: {0}", ex.Message));
                 return false;
             }
         }

@@ -3,24 +3,25 @@ namespace FibonacciSequence
 {
     public class FibonacciSequencer : Interfaces.IFibonacciSequencer
     {
-        public FibonacciSequencer()
-        {
-        }
-
         private int NextElement(int a, int b)
         {
-            //if (a < 0 || b < 1 || a > b)
-            //{
-            //    throw new Exception("invalid argument");
-            //}
             return a + b;
         }
 
-        public int[] NElements(int n)
+        public int[] GenerateSequence(int n) // TODO consider of use library like BigMath to handle long  numbers
         {
+            if (n < 1)
+                throw new Exception("n parameter must be higher than 0");
+
             var elements = new int[n];
+
             elements.SetValue(0, 0);
+            if (n == 1)
+                return elements;
+
             elements.SetValue(1, 1);
+            if (n == 2)
+                return elements;
 
             for (int i = 2; i < n; i++)
             {
