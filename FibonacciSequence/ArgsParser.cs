@@ -1,50 +1,55 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace FibonacciSequence
 {
     public class ArgsParser : Interfaces.IArgsParser
     { 
-        private readonly Dictionary<string, object> argsDict;
+        private readonly List<ProgramArgument> argsDict;
 
         public ArgsParser()
         {
-            argsDict = new Dictionary<string, object>();
+            argsDict = new List<ProgramArgument>();
         }
 
-        public void Parse(string[] args, Dictionary<string, Type> argsDef)
+        public List<ProgramArgument> Parse(string[] args, List<ProgramArgument> argsDef)
         {
-            for (int i = 0; i < args.Length; i++)
+            foreach (var argDef in argsDef)
             {
-                var arg = args[i];
-
-                if (!argsDef.ContainsKey(arg))                
-                    continue;
-
-                if (argsDef.TryGetValue(arg, out Type argParamType))
+                try
                 {
-                    if (argParamType != null && args.Length > i + 1)
-                    {
-                        var param = args[i + 1];
-                        try
-                        {
-                            var argParam = Convert.ChangeType(param, argParamType);
+                    var arg = args.SingleOrDefault(x => x == argDef.ConsoleSymbol);
 
-                            if (argsDict.TryAdd(arg, argParam))
-                                i++;
-                            else
-                                ThrowDuplicatedArg(arg);
-                        }
-                        catch (Exception ex)
+                    if (arg != null)
+                        argsDict.Add(argDef);
+
+                    if (argDef.HasParameter)
+                    {
+                        var index = Array.IndexOf(args, arg);
+                        if (args.Length> index + 2)
                         {
-                            throw new Exception(string.Format("Error while parsing parameter {0} of argument {1}, reason: {2}", param, arg, ex.Message), ex);
+                            var param = args[index + 1];
+                            try
+                            {
+                                var argParam = Convert.ChangeType(param, argDef.ParameterType);
+                                argDef.ArgumentParameter = argParam;
+                            }
+                            catch (Exception ex)
+                            {
+                                throw new Exception(string.Format("Error while parsing parameter {0} of argument {1}, reason: {2}", param, arg, ex.Message), ex);
+                            }
                         }
-                        continue;
                     }
                 }
-                if (!argsDict.TryAdd(arg, null))
-                    ThrowDuplicatedArg(arg);
-            }         
+                catch (Exception ex)
+                {
+                    ThrowDuplicatedArg(argDef.Name, ex.Message);
+                }
+
+            }
+
+            return argsDict;
         }
 
         private void ThrowInvalidArgError(string name)
@@ -52,22 +57,9 @@ namespace FibonacciSequence
             throw new Exception(string.Format("Invalid {0} parameter!", name));
         }
 
-        private void ThrowDuplicatedArg(string name)
+        private void ThrowDuplicatedArg(string name, string message = "")
         {
             throw new Exception(string.Format("Duplicated {0} argument!", name));
-        }
-
-        public bool HasArg(string name)
-        {
-            return argsDict.ContainsKey(name);
-        }
-
-        public T GetArgumentParameter<T>(string name, T defaultValue)
-        {
-            if (argsDict.TryGetValue(name, out object val))
-                return (T)val;
-
-            return defaultValue;
         }
     }
 }
