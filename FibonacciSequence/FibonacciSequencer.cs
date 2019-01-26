@@ -6,23 +6,23 @@ namespace FibonacciSequence
 {
     public class FibonacciSequencer : IFibonacciSequencer
     {
-        public int NextElement(int n_1, int n_2)
+        public ulong NextElement(ulong n_1, ulong n_2)
         {
             return n_1 + n_2;
         }
 
-        public int[] GenerateSequence(int n) // TODO consider of use library like BigMath to handle long  numbers
+        public ulong[] GenerateSequence(int n) // TODO consider of use library like BigMath to handle very big  numbers
         {
             if (n < 1)
                 throw new Exception("n parameter must be higher than 0");
 
-            var elements = new int[n];
+            var elements = new ulong[n];
 
-            elements.SetValue(0, 0);
+            elements.SetValue((ulong)0, 0);
             if (n == 1)
                 return elements;
 
-            elements.SetValue(1, 1);
+            elements.SetValue((ulong)1, 1);
             if (n == 2)
                 return elements;
 

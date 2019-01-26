@@ -17,17 +17,25 @@ namespace FibonacciSequence
         {
             foreach (var argDef in argsDef)
             {
+                string arg = null;
                 try
                 {
-                    var arg = args.SingleOrDefault(x => x == argDef.ConsoleSymbol);
+                    arg = args.SingleOrDefault(x => x == argDef.ConsoleSymbol);
+                }
+                catch (Exception ex)
+                {
+                    ThrowDuplicatedArg(argDef.Name, ex.Message);
+                }
 
-                    if (arg != null)
-                        argsDict.Add(argDef);
+                if (arg == null)
+                        continue;
+
+                    argsDict.Add(argDef);
 
                     if (argDef.HasParameter)
                     {
                         var index = Array.IndexOf(args, arg);
-                        if (args.Length> index + 2)
+                        if (args.Length> index + 1)
                         {
                             var param = args[index + 1];
                             try
@@ -37,16 +45,10 @@ namespace FibonacciSequence
                             }
                             catch (Exception ex)
                             {
-                                throw new Exception(string.Format("Error while parsing parameter {0} of argument {1}, reason: {2}", param, arg, ex.Message), ex);
+                                throw new Exception(string.Format("Error while parsing parameter value \"{0}\" of argument \"{1}\", reason: {2}", param, arg, ex.Message), ex);
                             }
                         }
                     }
-                }
-                catch (Exception ex)
-                {
-                    ThrowDuplicatedArg(argDef.Name, ex.Message);
-                }
-
             }
 
             return argsDict;

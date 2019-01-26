@@ -12,12 +12,12 @@ namespace FibonacciSequence
         private static readonly string argF = "-f";
         private static readonly string argS = "-s";
 
-        private static List<ProgramArgument> ArgsDefinition = new List<ProgramArgument>
+        private static readonly List<ProgramArgument> ArgsDefinition = new List<ProgramArgument>
         {
-            new ProgramArgument { ConsoleSymbol = argN, IsRequired = true, ParameterType = typeof(int),     Name = "Sequence Length",       HasParameter = true, ParameterIsRequired = true },
-            new ProgramArgument { ConsoleSymbol = argF, IsRequired = true, ParameterType = typeof(string),  Name = "File path",             HasParameter = true, ParameterIsRequired = true, MutualExplition = new List<string>{ argC } },
-            new ProgramArgument { ConsoleSymbol = argC, IsRequired = true, ParameterType = null,            Name = "Sequence to console",   MutualExplition = new List<string>{ argF } },
-            new ProgramArgument { ConsoleSymbol = argS, IsRequired = true, ParameterType = typeof(char),    Name = "Sequence separator",    HasParameter = true, ParameterIsRequired = true },
+            new ProgramArgument { ConsoleSymbol = argN, IsRequired = true,  ParameterType = typeof(int),     Name = "Sequence Length",       HasParameter = true, ParameterIsRequired = true },
+            new ProgramArgument { ConsoleSymbol = argF, IsRequired = false, ParameterType = typeof(string),  Name = "File path",             HasParameter = true, ParameterIsRequired = true, MutuallyExcluded = new List<string>{ argC } },
+            new ProgramArgument { ConsoleSymbol = argC, IsRequired = false, ParameterType = null,            Name = "Sequence to console",   MutuallyExcluded = new List<string>{ argF } },
+            new ProgramArgument { ConsoleSymbol = argS, IsRequired = false, ParameterType = typeof(char),    Name = "Sequence separator",    HasParameter = true, ParameterIsRequired = true },
         };
 
         public static void Main(string[] args)
@@ -34,19 +34,20 @@ namespace FibonacciSequence
                 return;
             }
 
-            if (ProgramArgumetnValidator.ValidateArguments(argsList, ArgsDefinition))
+            var result = ProgramArgument.ValidateArguments(argsList, ArgsDefinition);
+            if (!result.Success)
             {
-                // TODO message when invalid arguments
+                Console.WriteLine(result.ErrorMessage);
                 return;
             }
 
-            var n = GetArgumentParameterOrDefault<int>(argN, argsList, 0);
-            var separator = GetArgumentParameterOrDefault(argS, argsList, ' ');
+            var n = ProgramArgument.GetArgumentParameterOrDefault<int>(argN, argsList, 0);
+            var separator = ProgramArgument.GetArgumentParameterOrDefault(argS, argsList, ' ');
 
             var sequencer = new FibonacciSequencer();
             var sequenceString = sequencer.GetSequenceString(n, separator);
 
-            var filePath = GetArgumentParameterOrDefault<string>(argF, argsList, null);
+            var filePath = ProgramArgument.GetArgumentParameterOrDefault<string>(argF, argsList, null);
 
             if (string.IsNullOrEmpty(filePath))
                 WriteToConsole(sequenceString, argsList.Any(x => x.ConsoleSymbol == argC));
@@ -54,15 +55,6 @@ namespace FibonacciSequence
                 SaveToDisk(filePath, sequenceString);
 
             return;
-        }
-
-        private static T GetArgumentParameterOrDefault<T>(string argSymbol, List<ProgramArgument> argsList, T defaultValue)
-        {
-            var arg = argsList.FirstOrDefault(x => x.ConsoleSymbol == argSymbol);
-            if (arg == null || arg.ArgumentParameter == null)
-                return defaultValue;
-
-            return (T)arg.ArgumentParameter;
         }
 
         private static void WriteToConsole(string sequence, bool waitForInput)
